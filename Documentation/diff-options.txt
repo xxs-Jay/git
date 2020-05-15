@@ -651,6 +651,8 @@ ifndef::git-format-patch[]
 	not in a subdirectory (e.g. in a bare repository), you
 	can name which subdirectory to make the output relative
 	to by giving a <path> as an argument.
+	`--no-relative` can be used to countermand both `diff.relative` config
+	option and previous `--relative`.
 endif::git-format-patch[]
 
 -a::
