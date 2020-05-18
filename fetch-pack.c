@@ -1483,6 +1483,7 @@ static struct ref *do_fetch_pack_v2(struct fetch_pack_args *args,
 	struct fetch_negotiator negotiator_alloc;
 	struct fetch_negotiator *negotiator;
 	int seen_ack = 0;
+	int check_http_delimiter;
 
 	if (args->no_dependents) {
 		negotiator = NULL;
@@ -1501,6 +1502,8 @@ static struct ref *do_fetch_pack_v2(struct fetch_pack_args *args,
 	}
 
 	while (state != FETCH_DONE) {
+		check_http_delimiter = 0;
+
 		switch (state) {
 		case FETCH_CHECK_LOCAL:
 			sort_ref_list(&ref, ref_compare_name);
@@ -1557,6 +1560,7 @@ static struct ref *do_fetch_pack_v2(struct fetch_pack_args *args,
 				/* fallthrough */
 			case NO_COMMON_FOUND:
 				state = FETCH_SEND_REQUEST;
+				check_http_delimiter = 1;
 				break;
 			}
 			break;
@@ -1577,9 +1581,17 @@ static struct ref *do_fetch_pack_v2(struct fetch_pack_args *args,
 				die(_("git fetch-pack: fetch failed."));
 
 			state = FETCH_DONE;
+			check_http_delimiter = 1;
 			break;
 		case FETCH_DONE:
 			continue;
+		}
+
+		if (args->stateless_rpc && check_http_delimiter) {
+			if (packet_reader_read(&reader) != PACKET_READ_RESPONSE_END)
+				die(_("git fetch-pack: expected response end packet"));
+			if (packet_reader_read(&reader) != PACKET_READ_FLUSH)
+				die(_("git fetch-pack: expected flush packet"));
 		}
 	}
 

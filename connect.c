@@ -142,6 +142,7 @@ enum protocol_version discover_version(struct packet_reader *reader)
 		die_initial_contact(0);
 	case PACKET_READ_FLUSH:
 	case PACKET_READ_DELIM:
+	case PACKET_READ_RESPONSE_END:
 		version = protocol_v0;
 		break;
 	case PACKET_READ_NORMAL:
@@ -341,6 +342,7 @@ struct ref **get_remote_heads(struct packet_reader *reader,
 			state = EXPECTING_DONE;
 			break;
 		case PACKET_READ_DELIM:
+		case PACKET_READ_RESPONSE_END:
 			die(_("invalid packet"));
 		}
 
@@ -441,7 +443,8 @@ out:
 struct ref **get_remote_refs(int fd_out, struct packet_reader *reader,
 			     struct ref **list, int for_push,
 			     const struct argv_array *ref_prefixes,
-			     const struct string_list *server_options)
+			     const struct string_list *server_options,
+			     int stateless_rpc)
 {
 	int i;
 	const char *hash_name;
@@ -487,6 +490,13 @@ struct ref **get_remote_refs(int fd_out, struct packet_reader *reader,
 
 	if (reader->status != PACKET_READ_FLUSH)
 		die(_("expected flush after ref listing"));
+
+	if (stateless_rpc) {
+		if (packet_reader_read(reader) != PACKET_READ_RESPONSE_END)
+			die(_("expected response end packet after ref listing"));
+		if (packet_reader_read(reader) != PACKET_READ_FLUSH)
+			die(_("expected flush packet after response end"));
+	}
 
 	return list;
 }
