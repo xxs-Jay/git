@@ -306,7 +306,7 @@ static int get_packet_data(int fd, char **src_buf, size_t *src_size,
 	return ret;
 }
 
-static int packet_length(const char *linelen)
+int packet_length(const char linelen[4])
 {
 	int val = hex2chr(linelen);
 	return (val < 0) ? val : (val << 8) | hex2chr(linelen + 2);
