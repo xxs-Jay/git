@@ -1503,6 +1503,14 @@ FreeBSD)
 	;;
 esac
 
+# Detect arches where a few things don't work
+uname_m=$(uname -m)
+case $uname_m in
+parisc* | hppa*)
+	test_set_prereq HPPA
+	;;
+esac
+
 ( COLUMNS=1 && test $COLUMNS = 1 ) && test_set_prereq COLUMNS_CAN_BE_1
 test -z "$NO_PERL" && test_set_prereq PERL
 test -z "$NO_PTHREADS" && test_set_prereq PTHREADS
@@ -1642,7 +1650,7 @@ run_with_limited_cmdline () {
 }
 
 test_lazy_prereq CMDLINE_LIMIT '
-	test_have_prereq !MINGW,!CYGWIN &&
+	test_have_prereq !HPPA,!MINGW,!CYGWIN &&
 	run_with_limited_cmdline true
 '
 
@@ -1651,7 +1659,7 @@ run_with_limited_stack () {
 }
 
 test_lazy_prereq ULIMIT_STACK_SIZE '
-	test_have_prereq !MINGW,!CYGWIN &&
+	test_have_prereq !HPPA,!MINGW,!CYGWIN &&
 	run_with_limited_stack true
 '
 
