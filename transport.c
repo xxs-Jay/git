@@ -371,22 +371,19 @@ static int fetch_refs_via_pack(struct transport *transport,
 
 	switch (data->version) {
 	case protocol_v2:
-		refs = fetch_pack(&args, data->fd,
-				  refs_tmp ? refs_tmp : transport->remote_refs,
-				  to_fetch, nr_heads, &data->shallow,
-				  &transport->pack_lockfile, data->version);
+		/* do nothing */
 		break;
 	case protocol_v1:
 	case protocol_v0:
 		die_if_server_options(transport);
-		refs = fetch_pack(&args, data->fd,
-				  refs_tmp ? refs_tmp : transport->remote_refs,
-				  to_fetch, nr_heads, &data->shallow,
-				  &transport->pack_lockfile, data->version);
 		break;
 	case protocol_unknown_version:
 		BUG("unknown protocol version");
 	}
+	refs = fetch_pack(&args, data->fd,
+			  refs_tmp ? refs_tmp : transport->remote_refs,
+			  to_fetch, nr_heads, &data->shallow,
+			  &transport->pack_lockfile, data->version);
 
 	close(data->fd[0]);
 	close(data->fd[1]);
